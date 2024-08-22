@@ -1,1 +1,6 @@
 __pycache__/
+*.png
+*.jpg
+*.zip
+*.txt
+*.pt
