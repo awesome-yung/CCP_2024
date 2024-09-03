@@ -20,14 +20,13 @@ import time
 from valid import validation
 import wandb
 
-wandb.init(entity='2024CCP', project='yumin', name='base_ADE20K')
 
 def save_model(model, SAVED_DIR):
     file_name='best_model.pt'
     output_path = os.path.join(SAVED_DIR, file_name)
     torch.save(model, output_path)
 
-def train(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR):
+def train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR):
     print(f'Start training..')
     model.cuda()
 
@@ -49,6 +48,106 @@ def train(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, V
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+            # step 주기에 따른 loss 출력
+            if (step + 1) % 25 == 0:
+                print(
+                    f'{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | '
+                    f'Epoch [{epoch+1}/{NUM_EPOCHS}], '
+                    f'Step [{step+1}/{len(train_loader)}], '
+                    f'Loss: {round(loss.item(),4)}'
+                )
+                wandb.log({'Train Loss': round(loss.item(),4),
+                           'epoch' : epoch+1,
+                           'learning rate' : optimizer.param_groups[0]['lr']})
+
+        # validation 주기에 따른 loss 출력 및 best model 저장
+        if (epoch + 1) % VAL_EVERY == 0:
+            miou, dice = validation(epoch + 1, model, valid_loader, criterion, thr=0.5)
+            wandb.log({'Validation miou': miou,
+                       'Validation Dice': dice,
+                       })
+
+            # if best_dice < dice:
+            if best_miou < miou:
+                print(f"Best performance at epoch: {epoch + 1}, {best_miou:.4f} -> {miou:.4f}")
+                print(f"Save model in {SAVED_DIR}")
+                best_miou = miou
+                save_model(model, SAVED_DIR)
+
+def train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR):
+    print(f'Start training..')
+    model.cuda()
+
+    n_class = 150# len(val_labels)
+    best_miou = 0.
+
+    scaler = torch.cuda.amp.GradScaler()
+
+    for epoch in range(NUM_EPOCHS):
+        model.train()
+
+        for step, (images, masks) in enumerate(train_loader):
+
+            images, masks = images.cuda(), masks.cuda()
+
+            with torch.cuda.amp.autocast():
+                outputs = model(images)
+                loss = criterion(outputs, masks)
+            optimizer.zero_grad()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
+            # step 주기에 따른 loss 출력
+            if (step + 1) % 25 == 0:
+                print(
+                    f'{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | '
+                    f'Epoch [{epoch+1}/{NUM_EPOCHS}], '
+                    f'Step [{step+1}/{len(train_loader)}], '
+                    f'Loss: {round(loss.item(),4)}'
+                )
+                wandb.log({'Train Loss': round(loss.item(),4),
+                           'epoch' : epoch+1,
+                           'learning rate' : optimizer.param_groups[0]['lr']})
+
+        # validation 주기에 따른 loss 출력 및 best model 저장
+        if (epoch + 1) % VAL_EVERY == 0:
+            miou, dice = validation(epoch + 1, model, valid_loader, criterion, thr=0.5)
+            wandb.log({'Validation miou': miou,
+                       'Validation Dice': dice,
+                       })
+
+            # if best_dice < dice:
+            if best_miou < miou:
+                print(f"Best performance at epoch: {epoch + 1}, {best_miou:.4f} -> {miou:.4f}")
+                print(f"Save model in {SAVED_DIR}")
+                best_miou = miou
+                save_model(model, SAVED_DIR)
+
+def train_2(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR):
+    print(f'Start training..')
+    model.cuda()
+
+    n_class = 150# len(val_labels)
+    best_miou = 0.
+
+    scaler = torch.cuda.amp.GradScaler()
+
+    for epoch in range(NUM_EPOCHS):
+        model.train()
+
+        for step, (images, masks) in enumerate(train_loader):
+
+            images, masks = images.cuda(), masks.cuda()
+
+            with torch.cuda.amp.autocast(dtype=torch.bfloat16):
+                outputs = model(images)
+                loss = criterion(outputs, masks)
+            optimizer.zero_grad()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             # step 주기에 따른 loss 출력
             if (step + 1) % 25 == 0:

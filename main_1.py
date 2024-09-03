@@ -20,10 +20,10 @@ import time
 from BEIT import BEiT3
 from dataset import get_dataloader
 from model import get_model
-from train import train
+from train import train_0, train_1, train_2
 import wandb
 
-wandb.init(entity='2024CCP', project='yumin', name='base_ADE20K')
+wandb.init(entity='2024CCP', project='yumin', name='float16')
 
 RANDOM_SEED = 42
 
@@ -38,7 +38,7 @@ def set_seed():
 set_seed()
 
 LR = 1e-5
-NUM_EPOCHS = 4
+NUM_EPOCHS = 3
 VAL_EVERY = 1
 SAVED_DIR = './'
 train_batch_size = 4
@@ -52,5 +52,5 @@ criterion = nn.BCEWithLogitsLoss()
 
 optimizer = optim.AdamW(params=model.parameters(), lr=LR, weight_decay=1e-6)
 
-train(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR)
+train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR)
 
