@@ -3,5 +3,4 @@ wandb/
 *.png
 *.jpg
 *.zip
-*.txt
 *.pt
