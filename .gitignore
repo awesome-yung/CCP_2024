@@ -4,3 +4,4 @@ wandb/
 *.jpg
 *.zip
 *.pt
+*.txt
