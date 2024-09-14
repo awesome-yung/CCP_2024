@@ -13,9 +13,6 @@ import torch.optim as optim
 import datetime
 from tqdm import tqdm
 
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
-
 
 def dice_coef(y_true, y_pred):
     y_true_f = y_true.flatten(2) # ( b, c, h, w ) -> ( b, c, h*w )

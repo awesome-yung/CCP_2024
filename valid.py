@@ -13,9 +13,6 @@ import torch.optim as optim
 import datetime
 from tqdm import tqdm
 
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
-
 import time
 from metric import dice_coef, mIoU
 

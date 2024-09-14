@@ -16,9 +16,6 @@ from tqdm import tqdm
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-
-
-
 img_transforms = A.Compose([
     A.Resize(height=224, width=224, interpolation=1, always_apply=True),
     ToTensorV2()
