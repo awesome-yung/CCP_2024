@@ -20,6 +20,8 @@ import wandb
 
 def save_model(model, file_name):
     SAVED_DIR = './saved/'
+    if not os.path.exists(SAVED_DIR ):
+        os.makedirs(SAVED_DIR )
     output_path = os.path.join(SAVED_DIR, file_name)
     torch.save(model, output_path)
 
