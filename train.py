@@ -18,12 +18,12 @@ from valid import validation
 import wandb
 
 
-def save_model(model, SAVED_DIR):
-    file_name='best_model.pt'
+def save_model(model, file_name):
+    SAVED_DIR = './'
     output_path = os.path.join(SAVED_DIR, file_name)
     torch.save(model, output_path)
 
-def train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR):
+def train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name):
     print(f'Start training..')
     model.cuda()
 
@@ -68,11 +68,11 @@ def train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
             # if best_dice < dice:
             if best_miou < miou:
                 print(f"Best performance at epoch: {epoch + 1}, {best_miou:.4f} -> {miou:.4f}")
-                print(f"Save model in {SAVED_DIR}")
+                print(f"Save model in {file_name}")
                 best_miou = miou
-                save_model(model, SAVED_DIR)
+                save_model(model, file_name)
 
-def train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR):
+def train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name):
     print(f'Start training..')
     model.cuda()
 
@@ -118,11 +118,11 @@ def train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
             # if best_dice < dice:
             if best_miou < miou:
                 print(f"Best performance at epoch: {epoch + 1}, {best_miou:.4f} -> {miou:.4f}")
-                print(f"Save model in {SAVED_DIR}")
+                print(f"Save model in {file_name}")
                 best_miou = miou
-                save_model(model, SAVED_DIR)
+                save_model(model, file_name)
 
-def train_2(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR):
+def train_2(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name):
     print(f'Start training..')
     model.cuda()
 
@@ -168,6 +168,6 @@ def train_2(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
             # if best_dice < dice:
             if best_miou < miou:
                 print(f"Best performance at epoch: {epoch + 1}, {best_miou:.4f} -> {miou:.4f}")
-                print(f"Save model in {SAVED_DIR}")
+                print(f"Save model as {file_name}")
                 best_miou = miou
-                save_model(model, SAVED_DIR)
+                save_model(model, file_name)

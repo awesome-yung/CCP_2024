@@ -35,10 +35,10 @@ def set_seed():
 set_seed()
 
 LR = 1e-5
-NUM_EPOCHS = 4
+NUM_EPOCHS = 5
 VAL_EVERY = 1
-SAVED_DIR = './'
-train_batch_size = 4
+file_name = 'float32.pt'
+train_batch_size = 8
 valid_batch_size = 2
 
 train_loader, valid_loader = get_dataloader(root ='./ADE20K/ADEChallengeData2016', train_batch_size=train_batch_size, valid_batch_size=valid_batch_size)
@@ -49,5 +49,5 @@ criterion = nn.BCEWithLogitsLoss()
 
 optimizer = optim.AdamW(params=model.parameters(), lr=LR, weight_decay=1e-6)
 
-train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, SAVED_DIR)
+train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name)
 

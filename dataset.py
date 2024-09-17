@@ -37,6 +37,9 @@ class ADE20KDataset(Dataset):
 
         self.images = sorted(os.listdir(self.images_dir))[:100]
         self.labels = sorted(os.listdir(self.labels_dir))[:100]
+
+        # self.images = sorted(os.listdir(self.images_dir))
+        # self.labels = sorted(os.listdir(self.labels_dir))
         self.num_classes = 150  # ADE20K 클래스 수
 
     def __len__(self):
