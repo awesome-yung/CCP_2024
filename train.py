@@ -19,7 +19,7 @@ import wandb
 
 
 def save_model(model, file_name):
-    SAVED_DIR = './'
+    SAVED_DIR = './saved/'
     output_path = os.path.join(SAVED_DIR, file_name)
     torch.save(model, output_path)
 
