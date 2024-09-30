@@ -38,11 +38,11 @@ def set_seed():
 set_seed()
 
 LR = 1e-5
-NUM_EPOCHS = 5
+NUM_EPOCHS = 1
 VAL_EVERY = 1
 file_name = 'float16.pt'
-train_batch_size = 16
-valid_batch_size = 4
+train_batch_size = 2
+valid_batch_size = 1
 
 train_loader, valid_loader = get_dataloader(root ='./ADE20K/ADEChallengeData2016', train_batch_size=train_batch_size, valid_batch_size=valid_batch_size)
 

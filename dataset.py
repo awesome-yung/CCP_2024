@@ -17,12 +17,12 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 img_transforms = A.Compose([
-    A.Resize(height=224, width=224, interpolation=1, always_apply=True),
-    ToTensorV2()
+    A.Resize(height=512, width=512, interpolation=1, always_apply=True),
+    # ToTensorV2()
 ])
 
 mask_transforms = A.Compose([
-    A.Resize(height=224, width=224, interpolation=0, always_apply=True),
+    A.Resize(height=512, width=512, interpolation=0, always_apply=True),
 ])
 
 class ADE20KDataset(Dataset):
@@ -35,11 +35,11 @@ class ADE20KDataset(Dataset):
         self.images_dir = os.path.join(root, 'images', image_set)
         self.labels_dir = os.path.join(root, 'annotations', image_set)
 
-        # self.images = sorted(os.listdir(self.images_dir))[:500]
-        # self.labels = sorted(os.listdir(self.labels_dir))[:500]
+        self.images = sorted(os.listdir(self.images_dir))[:500]
+        self.labels = sorted(os.listdir(self.labels_dir))[:500]
 
-        self.images = sorted(os.listdir(self.images_dir))
-        self.labels = sorted(os.listdir(self.labels_dir))
+        # self.images = sorted(os.listdir(self.images_dir))
+        # self.labels = sorted(os.listdir(self.labels_dir))
         self.num_classes = 150  # ADE20K 클래스 수
 
     def __len__(self):
@@ -52,21 +52,24 @@ class ADE20KDataset(Dataset):
         img = Image.open(img_path).convert("RGB")
         mask = Image.open(label_path)
 
-        img = np.array(img).astype(np.float32)
+        # img = np.array(img).astype(np.float32)
+        img = np.array(img)
         mask = np.array(mask)
 
         # 클래스별 마스크 생성
-        multi_mask = np.zeros((mask.shape[0], mask.shape[1], self.num_classes), dtype=np.float32)
+        # multi_mask = np.zeros((mask.shape[0], mask.shape[1], self.num_classes), dtype=np.float32)
+        multi_mask = np.zeros((mask.shape[0], mask.shape[1], self.num_classes))
 
         for c in range(1, self.num_classes+1):
             multi_mask[:, :, c - 1] = (mask == c)
 
         if self.img_transforms:
             img = img_transforms(image=img)['image']
+            img = torch.from_numpy(img).permute(2,0,1).float()
 
         if self.mask_transforms:
             multi_mask= mask_transforms(image=multi_mask)['image']
-            multi_mask = torch.from_numpy(multi_mask).permute(2,0,1)
+            multi_mask = torch.from_numpy(multi_mask).permute(2,0,1).float()
 
         return img, multi_mask
     

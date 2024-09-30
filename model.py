@@ -9,12 +9,13 @@ import os
 from PIL import Image
 import torch.nn.functional as F
 import torch.optim as optim
+from torchvision import models
 
 import datetime
 from tqdm import tqdm
 
 import time
-from BEIT import BEiT3, BEiT3_with_flash
+from BEIT import BEiT3, BEiT3_with_flash, BEiT3_with_jax
 
 
 def count_parameters(model):
@@ -82,6 +83,9 @@ class DeepLabV2(nn.Module):
     
 def get_model():
     backbone = BEiT3()
+    # backbone = models.segmentation.fcn_resnet50(pretrained=True)
+    # backbone.classifier[4] = nn.Conv2d(512, 150, kernel_size=1)
+    
     aspp_module = ASPP(in_channels=512, out_channels=256, num_classes=150)
     model = DeepLabV2(backbone=backbone, classifier=aspp_module)
     num_params = count_parameters(model)
@@ -90,6 +94,14 @@ def get_model():
 
 def get_model_with_flash():
     backbone = BEiT3_with_flash()
+    aspp_module = ASPP(in_channels=512, out_channels=256, num_classes=150)
+    model = DeepLabV2(backbone=backbone, classifier=aspp_module)
+    num_params = count_parameters(model)
+    print(f'Total number of parameters: {num_params}')
+    return model
+
+def get_model_with_jax():
+    backbone = BEiT3_with_jax()
     aspp_module = ASPP(in_channels=512, out_channels=256, num_classes=150)
     model = DeepLabV2(backbone=backbone, classifier=aspp_module)
     num_params = count_parameters(model)

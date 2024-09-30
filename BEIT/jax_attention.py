@@ -5,15 +5,16 @@ import torch.nn.functional as F
 import jax
 import jax.numpy as jnp
 import functools
+import numpy as np
 
-class MultiheadAttentionWithJax(nn.Module):
+class MultiheadAttention_with_jax(nn.Module):
     def __init__(
         self,
         embed_dim,
         num_heads,
         dropout=0.0,
-        key_chunk_size=4096,
-        query_chunk_size=1024
+        key_chunk_size=64,  #  chunk size 조절
+        query_chunk_size=64
     ):
         super().__init__()
         self.embed_dim = embed_dim
@@ -72,7 +73,9 @@ class MultiheadAttentionWithJax(nn.Module):
 
         all_values = chunk_values.sum(axis=0)
         all_weights = chunk_weights.sum(axis=0)
-        return all_values / all_weights
+        # return all_values / all_weights
+        return all_values / all_weights[..., None]
+
 
     def forward(self, query, key, value):
         bsz, tgt_len, _ = query.size()
@@ -102,7 +105,7 @@ class MultiheadAttentionWithJax(nn.Module):
         attn_output = self._query_chunk_attention(q_jax, k_jax, v_jax)
 
         # Convert back to PyTorch tensor
-        attn_output = torch.tensor(attn_output).to(query.device)
+        attn_output = torch.from_numpy(np.array(attn_output)).to(query.device)
 
         # Reshape back to original size and apply output projection
         attn_output = attn_output.view(bsz, self.num_heads, tgt_len, self.head_dim)

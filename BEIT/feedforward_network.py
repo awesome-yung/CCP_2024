@@ -38,7 +38,8 @@ class FeedForwardNetwork(nn.Module):
         x_shape = x.shape
         x = x.reshape(-1, x.size(-1))
         x = self.fc1(x)
-        x = self.activation_fn(x.float()).type_as(x)
+        # x = self.activation_fn(x.float()).type_as(x)
+        x = self.activation_fn(x)  # autocast가 type 관리
         x = self.fc2(x)
         x = x.view(x_shape)
         x = self.dropout_module(x)

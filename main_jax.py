@@ -16,11 +16,11 @@ from tqdm import tqdm
 import time
 from BEIT import BEiT3
 from dataset import get_dataloader
-from model import get_model
+from model import get_model_with_jax
 from train import train_0, train_1
 import wandb
 
-wandb.init(entity='2024CCP', project='yumin', name='float32')
+wandb.init(entity='2024CCP', project='yumin', name='float32_jax')
 
 RANDOM_SEED = 42
 
@@ -37,17 +37,17 @@ set_seed()
 LR = 1e-5
 NUM_EPOCHS = 1
 VAL_EVERY = 1
-file_name = 'float32.pt'
+file_name = 'float32_jax.pt'
 train_batch_size = 2
 valid_batch_size = 1
 
 train_loader, valid_loader = get_dataloader(root ='./ADE20K/ADEChallengeData2016', train_batch_size=train_batch_size, valid_batch_size=valid_batch_size)
 
-model = get_model()
+model = get_model_with_jax()
 
 criterion = nn.BCEWithLogitsLoss()
 
 optimizer = optim.AdamW(params=model.parameters(), lr=LR, weight_decay=1e-6)
 
-train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name)
+train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name)
 
