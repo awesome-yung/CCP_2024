@@ -13,8 +13,8 @@ class MultiheadAttention_with_jax(nn.Module):
         embed_dim,
         num_heads,
         dropout=0.0,
-        key_chunk_size=64,  #  chunk size 조절
-        query_chunk_size=64
+        key_chunk_size=4096,  #  chunk size 조절
+        query_chunk_size=1024
     ):
         super().__init__()
         self.embed_dim = embed_dim

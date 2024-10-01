@@ -35,8 +35,8 @@ class ADE20KDataset(Dataset):
         self.images_dir = os.path.join(root, 'images', image_set)
         self.labels_dir = os.path.join(root, 'annotations', image_set)
 
-        self.images = sorted(os.listdir(self.images_dir))[:500]
-        self.labels = sorted(os.listdir(self.labels_dir))[:500]
+        self.images = sorted(os.listdir(self.images_dir))[:120]
+        self.labels = sorted(os.listdir(self.labels_dir))[:120]
 
         # self.images = sorted(os.listdir(self.images_dir))
         # self.labels = sorted(os.listdir(self.labels_dir))
