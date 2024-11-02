@@ -29,21 +29,26 @@ def train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
     print(f'Start training..')
     model.cuda()
 
-    n_class = 150# len(val_labels)
+    n_class = 21
     best_miou = 0.
 
     for epoch in range(NUM_EPOCHS):
         model.train()
 
-        for step, (images, masks) in enumerate(train_loader):
+        for step, (images, masks) in tqdm(enumerate(train_loader)):
             # gpu 연산을 위해 device 할당
-            images, masks = images.cuda(), masks.cuda()
+            images, masks = images.cuda(), masks.to('cuda',dtype=torch.int64)
+            masks = F.one_hot(masks.squeeze(1),num_classes=n_class).permute(0,3,1,2).to(torch.float32)[:,:,:,:]
 
             # inference
             outputs = model(images)
 
             # loss 계산
-            loss = criterion(outputs, masks)
+            criterion1, criterion2 = criterion
+            bce_loss = criterion1(outputs, masks)
+            focal_loss = criterion2(outputs, masks)
+            loss = 0.5 * bce_loss + 0.5 * focal_loss
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -59,20 +64,21 @@ def train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
                 wandb.log({'Train Loss': round(loss.item(),4),
                            'epoch' : epoch+1,
                            'learning rate' : optimizer.param_groups[0]['lr']})
+        with torch.no_grad():
+            save_model(model, f'epoch_{epoch}_'+file_name)
+            # validation 주기에 따른 loss 출력 및 best model 저장
+            if (epoch + 1) % VAL_EVERY == 0:
+                miou, dice = validation(epoch + 1, model, valid_loader, criterion, thr=0.5)
+                wandb.log({'Validation miou': miou,
+                        'Validation Dice': dice,
+                        })
 
-        # validation 주기에 따른 loss 출력 및 best model 저장
-        if (epoch + 1) % VAL_EVERY == 0:
-            miou, dice = validation(epoch + 1, model, valid_loader, criterion, thr=0.5)
-            wandb.log({'Validation miou': miou,
-                       'Validation Dice': dice,
-                       })
-
-            # if best_dice < dice:
-            if best_miou < miou:
-                print(f"Best performance at epoch: {epoch + 1}, {best_miou:.4f} -> {miou:.4f}")
-                print(f"Save model in {file_name}")
-                best_miou = miou
-                save_model(model, file_name)
+                # if best_dice < dice:
+                if best_miou < miou:
+                    print(f"Best performance at epoch: {epoch + 1}, {best_miou:.4f} -> {miou:.4f}")
+                    print(f"Save model in {file_name}")
+                    best_miou = miou
+                    save_model(model, file_name)
 
 def train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name):
     print(f'Start training..')

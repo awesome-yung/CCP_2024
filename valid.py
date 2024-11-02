@@ -17,16 +17,8 @@ import time
 from metric import dice_coef, mIoU
 
 
-label_path = './ADE20K/ADEChallengeData2016/objectInfo150.txt'
-labels = []
-val_labels = []
-with open(label_path, 'r') as file:
-    for line in file:
-        labels.append(line.split("\t")[-1].strip())
-        val_labels.append(line.split("\t")[-1].strip())
-        
-labels[0] = 'background'
-del val_labels[0]
+labels = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
+        'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
 
 
 def validation(epoch, model, data_loader, criterion, thr=0.5):
@@ -37,12 +29,13 @@ def validation(epoch, model, data_loader, criterion, thr=0.5):
     iou = []
     dices = []
     with torch.no_grad():
-        n_class = 150#len(labels)
+        n_class = 21 #len(labels)
         total_loss = 0
         cnt = 0
 
         for step, (images, masks) in tqdm(enumerate(data_loader), total=len(data_loader)):
-            images, masks = images.cuda(), masks.cuda()
+            images, masks = images.cuda(), masks.to('cuda',dtype=torch.int64)
+            masks = F.one_hot(masks.squeeze(1),num_classes=n_class).permute(0,3,1,2).to(torch.float32)[:,:,:,:]
 
             outputs = model(images)
 
@@ -53,7 +46,10 @@ def validation(epoch, model, data_loader, criterion, thr=0.5):
             if output_h != mask_h or output_w != mask_w:
                 outputs = F.interpolate(outputs, size=(mask_h, mask_w), mode="bilinear")
 
-            loss = criterion(outputs, masks)
+            criterion1, criterion2 = criterion
+            bce_loss = criterion1(outputs, masks)
+            focal_loss = criterion2(outputs, masks)
+            loss = 0.5 * bce_loss + 0.5 * focal_loss
             total_loss += loss
             cnt += 1
 
@@ -73,7 +69,7 @@ def validation(epoch, model, data_loader, criterion, thr=0.5):
     
     dice_str = [
         f"{c:<12}: {d.item():.4f}"
-        for c, d in zip(val_labels, miou_per_class)
+        for c, d in zip(labels, miou_per_class)
     ]
     dice_str = "\n".join(dice_str)
     print(dice_str)
