@@ -5,3 +5,5 @@ wandb/
 *.zip
 *.pt
 *.txt
+*.xml
+*.tar

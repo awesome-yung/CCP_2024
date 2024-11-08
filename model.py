@@ -79,14 +79,13 @@ class DeepLabV2(nn.Module):
         _, _, feature_map_h, feature_map_w = x.size()
         x = self.classifier(x)
         out = F.interpolate(x, size=(feature_map_h * self.upsampling, feature_map_w * self.upsampling), mode="bilinear")
+        out = F.softmax(out,dim=1)
         return out
     
-def get_model():
+def get_model(num_classes = 150):
     backbone = BEiT3()
-    # backbone = models.segmentation.fcn_resnet50(pretrained=True)
-    # backbone.classifier[4] = nn.Conv2d(512, 150, kernel_size=1)
     
-    aspp_module = ASPP(in_channels=512, out_channels=256, num_classes=21)
+    aspp_module = ASPP(in_channels=512, out_channels=256, num_classes=num_classes)
     model = DeepLabV2(backbone=backbone, classifier=aspp_module)
     num_params = count_parameters(model)
     print(f'Total number of parameters: {num_params}')

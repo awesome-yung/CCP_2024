@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 import time
 from BEIT import BEiT3
-from dataset import get_dataloader
+from pascal_dataset import get_pascal_dataloader
 from model import get_model
 from train import train_0, train_1
 import wandb
@@ -47,19 +47,26 @@ def set_seed():
 
 set_seed()
 
-LR = 1e-3
-NUM_EPOCHS = 4
-VAL_EVERY = 2
+LR = 1e-4
+NUM_EPOCHS = 1000
+VAL_EVERY = 50000
 file_name = 'float32.pt'
 train_batch_size = 8
-valid_batch_size = 2
+valid_batch_size = 1
+root = "Pascal"
 
-train_loader, valid_loader = get_dataloader(root ='./VOCdevkit/VOC2012/', train_batch_size=train_batch_size, valid_batch_size=valid_batch_size)
+# if root == './ADE20K/ADEChallengeData2016':
+#     train_loader, valid_loader = get_dataloader(root ='./ADE20K/ADEChallengeData2016', train_batch_size=train_batch_size, valid_batch_size=valid_batch_size)
+if root == "Pascal":
+    train_loader, valid_loader = get_pascal_dataloader(root ='Pascal', train_batch_size=train_batch_size, valid_batch_size=valid_batch_size)
 
-model = get_model()
+
+model = get_model(num_classes=21)
 
 criterion = [nn.BCELoss(),FocalLoss()]
-optimizer = optim.AdamW(params=model.parameters(), lr=LR, weight_decay=1e-6)
+# criterion = [nn.BCELoss()]
+
+optimizer = optim.AdamW(params=model.parameters(), lr=LR, weight_decay=0.01)
 
 train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS, VAL_EVERY, file_name)
 
