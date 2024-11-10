@@ -204,9 +204,10 @@ class MaskTransformer(nn.Module):
         cls_seg_feat = cls_seg_feat / cls_seg_feat.norm(dim=-1, keepdim=True)
 
         masks = patches @ cls_seg_feat.transpose(1, 2)
-        masks = torch.softmax(masks / self.scale, dim=-1)
-        masks = self.mask_norm(masks)
+        # masks = torch.softmax(masks / self.scale, dim=-1)
+        # masks = self.mask_norm(masks)
         masks = rearrange(masks, "b (h w) n -> b n h w", h=int(GS))
+        # print(masks.argmax(dim=1))
 
         return masks
 
@@ -247,6 +248,12 @@ def create_vit(model_cfg):
     if backbone == "vit_base_patch8_384":
         path = os.path.expandvars("$TORCH_HOME/hub/checkpoints/vit_base_patch8_384.pth")
         state_dict = torch.load(path, map_location="cpu")
+        filtered_dict = checkpoint_filter_fn(state_dict, model)
+        model.load_state_dict(filtered_dict, strict=True)
+    elif backbone == "vit_base_patch16_224.orig_in21k_ft_in1k":
+        print("model load")
+        url = 'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_p16_224-80ecf9dd.pth'
+        state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu", check_hash=True)
         filtered_dict = checkpoint_filter_fn(state_dict, model)
         model.load_state_dict(filtered_dict, strict=True)
     elif "deit" in backbone:
