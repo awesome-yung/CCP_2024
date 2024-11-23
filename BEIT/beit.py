@@ -134,7 +134,7 @@ class BEiT3_with_flash(nn.Module):
 class BEiT3_with_jax(nn.Module):
     def __init__(self, 
                 num_channels = 3,
-                img_size=512,
+                img_size=256,
                 patch_size=16,
                 in_chans=3,
                 emb_dim=1024,
@@ -180,12 +180,16 @@ class BEiT3_with_jax(nn.Module):
             return x
 
     def forward(self, x = None):
-
+        print(f"ori x = ",x.shape)
         x = self.patch_embedding(x)
+        print(f"patch x = ",x.shape)
         x = self.positional_embedding(x)
+        print(f"pos x = ",x.shape)
         x = self.encoder(x)
+        print(f"enco x = ",x.shape)
 
         x = self.view_and_permute(x) # [b, 196, 1024] -> [b, 1024, 14, 14]
+        print(f"view x = ",x.shape)
         x = self.upsample1(x)        # [b, 512, 28, 28]
-
+        print(f"out x = ",x.shape)
         return x

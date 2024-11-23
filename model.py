@@ -76,10 +76,15 @@ class DeepLabV2(nn.Module):
 
     def forward(self, x):
         x = self.backbone(x)
+        print(f"DeepLabV2 x shape after backbone: {x.shape}")
         _, _, feature_map_h, feature_map_w = x.size()
+        print(f"DeepLabV2 x shape before classifier: {x.shape}")
         x = self.classifier(x)
+        print(f"DeepLabV2 x shape after classifier: {x.shape}")
         out = F.interpolate(x, size=(feature_map_h * self.upsampling, feature_map_w * self.upsampling), mode="bilinear")
+        print(f"DeepLabV2 out shape before softmax: {out.shape}")
         out = F.softmax(out,dim=1)
+        print(f'DeepLabV2 output shape: {out.shape}')
         return out
     
 def get_model(num_classes = 150):

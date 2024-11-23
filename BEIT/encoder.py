@@ -27,7 +27,6 @@ class EncoderLayer(nn.Module):
             )
         self.dropout_module = nn.Dropout(dropout)  
 
-
     def forward(self, x):
 
         residual = x
@@ -189,7 +188,7 @@ class EncoderLayer_with_jax(nn.Module):
 
 
     def forward(self, x):
-
+        print(f'x = {x.shape}')
         residual = x
         x = self.self_attn_layer_norm(x)
         x = self.self_attn(
@@ -228,7 +227,7 @@ class Encoder_with_jax(nn.Module):
 
         for i in range(combine_channel_depth,):
             self.layers.append(
-                EncoderLayer(
+                EncoderLayer_with_jax(
                     emb_dim,
                     comb_ffn_dim,
                     activation_fn,

@@ -81,26 +81,28 @@ class MultiheadAttention_with_jax(nn.Module):
         bsz, tgt_len, _ = query.size()
 
         # Project Q, K, V
+        assert query.shape == key.shape == value.shape
         q = self.q_proj(query)
         k = self.k_proj(key)
         v = self.v_proj(value)
         q *= self.scaling
 
+        print(f"input = {key.shape}, k = {k.shape}, q = {q.shape}, num_heads = {self.num_heads}")
         # Reshape to [batch_size, seq_len, num_heads, head_dim] and then merge heads
         q = q.view(bsz, tgt_len, self.num_heads, self.head_dim).transpose(1, 2)
         k = k.view(bsz, tgt_len, self.num_heads, self.head_dim).transpose(1, 2)
         v = v.view(bsz, tgt_len, self.num_heads, self.head_dim).transpose(1, 2)
-
+        print(f"q2 = {q.shape}")
         # Use JAX-based attention calculation
         q = q.reshape(bsz * self.num_heads, tgt_len, self.head_dim)
         k = k.reshape(bsz * self.num_heads, tgt_len, self.head_dim)
         v = v.reshape(bsz * self.num_heads, tgt_len, self.head_dim)
-
+        print(f"q3 = {q.shape}")
         # Convert to JAX arrays
         q_jax = jnp.array(q.detach().cpu().numpy())
         k_jax = jnp.array(k.detach().cpu().numpy())
         v_jax = jnp.array(v.detach().cpu().numpy())
-
+        print(f"q4 = {q_jax.shape}")
         # JAX 어텐션 계산
         attn_output = self._query_chunk_attention(q_jax, k_jax, v_jax)
 
@@ -108,8 +110,9 @@ class MultiheadAttention_with_jax(nn.Module):
         attn_output = torch.from_numpy(np.array(attn_output)).to(query.device)
 
         # Reshape back to original size and apply output projection
-        attn_output = attn_output.view(bsz, self.num_heads, tgt_len, self.head_dim)
+        attn_output = attn_output.reshape(bsz, self.num_heads, tgt_len, self.head_dim)
         attn_output = attn_output.transpose(1, 2).reshape(bsz, tgt_len, self.embed_dim)
+        print(f'final attn_output: {attn_output.shape}')
 
         attn_output = self.out_proj(attn_output)
 

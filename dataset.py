@@ -17,12 +17,12 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 img_transforms = A.Compose([
-    A.Resize(height=512, width=512, interpolation=1, always_apply=True),
+    A.Resize(height=256, width=256, interpolation=1, always_apply=True),
     # ToTensorV2()
 ])
 
 mask_transforms = A.Compose([
-    A.Resize(height=512, width=512, interpolation=0, always_apply=True),
+    A.Resize(height=256, width=256, interpolation=0, always_apply=True),
 ])
 
 class ADE20KDataset(Dataset):

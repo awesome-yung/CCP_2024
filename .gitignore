@@ -7,3 +7,5 @@ wandb/
 *.txt
 *.xml
 *.tar
+*.json
+*.jpeg

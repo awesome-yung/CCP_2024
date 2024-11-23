@@ -14,10 +14,10 @@ import datetime
 from tqdm import tqdm
 
 import time
-import wandb
+# import wandb
 
 from valid import validation
-from loss import FocalLoss
+# from loss import FocalLoss
 
 def save_model(model, file_name):
     SAVED_DIR = './saved/'
@@ -74,18 +74,18 @@ def train_0(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
                     f'Step [{step+1}/{len(train_loader)}], '
                     f'Loss: {round(loss.item(),4)}'
                 )
-                wandb.log({'Train Loss': round(loss.item(),4),
-                           'epoch' : epoch+1,
-                           'learning rate' : optimizer.param_groups[0]['lr']})
+                # wandb.log({'Train Loss': round(loss.item(),4),
+                #            'epoch' : epoch+1,
+                #            'learning rate' : optimizer.param_groups[0]['lr']})
         scheduler.step()
         with torch.no_grad():
             save_model(model, f'epoch_{epoch}_'+file_name)
             # validation 주기에 따른 loss 출력 및 best model 저장
             if (epoch + 1) % VAL_EVERY == 0:
                 miou, dice = validation(epoch + 1, model, valid_loader, criterion, thr=0.5)
-                wandb.log({'Validation miou': miou,
-                        'Validation Dice': dice,
-                        })
+                # wandb.log({'Validation miou': miou,
+                #         'Validation Dice': dice,
+                #         })
 
                 # if best_dice < dice:
                 if best_miou < miou:
@@ -110,9 +110,15 @@ def train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
 
             images, masks = images.cuda(), masks.cuda()
 
+
             with torch.cuda.amp.autocast():
                 outputs = model(images)
                 loss = criterion(outputs, masks)
+
+            print("***train loss part***")
+            print(f'outputs shape: {outputs.shape}')
+            print(f'masks shape: {masks.shape}')
+        
             optimizer.zero_grad()
             scaler.scale(loss).backward()
             scaler.step(optimizer)
@@ -126,16 +132,16 @@ def train_1(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
                     f'Step [{step+1}/{len(train_loader)}], '
                     f'Loss: {round(loss.item(),4)}'
                 )
-                wandb.log({'Train Loss': round(loss.item(),4),
-                           'epoch' : epoch+1,
-                           'learning rate' : optimizer.param_groups[0]['lr']})
+                # wandb.log({'Train Loss': round(loss.item(),4),
+                #            'epoch' : epoch+1,
+                #            'learning rate' : optimizer.param_groups[0]['lr']})
 
         # validation 주기에 따른 loss 출력 및 best model 저장
         if (epoch + 1) % VAL_EVERY == 0:
             miou, dice = validation(epoch + 1, model, valid_loader, criterion, thr=0.5)
-            wandb.log({'Validation miou': miou,
-                       'Validation Dice': dice,
-                       })
+            # wandb.log({'Validation miou': miou,
+            #            'Validation Dice': dice,
+            #            })
 
             # if best_dice < dice:
             if best_miou < miou:
@@ -176,16 +182,16 @@ def train_2(model, train_loader, valid_loader, criterion, optimizer, NUM_EPOCHS,
                     f'Step [{step+1}/{len(train_loader)}], '
                     f'Loss: {round(loss.item(),4)}'
                 )
-                wandb.log({'Train Loss': round(loss.item(),4),
-                           'epoch' : epoch+1,
-                           'learning rate' : optimizer.param_groups[0]['lr']})
+                # wandb.log({'Train Loss': round(loss.item(),4),
+                #            'epoch' : epoch+1,
+                #            'learning rate' : optimizer.param_groups[0]['lr']})
 
         # validation 주기에 따른 loss 출력 및 best model 저장
         if (epoch + 1) % VAL_EVERY == 0:
             miou, dice = validation(epoch + 1, model, valid_loader, criterion, thr=0.5)
-            wandb.log({'Validation miou': miou,
-                       'Validation Dice': dice,
-                       })
+            # wandb.log({'Validation miou': miou,
+            #            'Validation Dice': dice,
+            #            })
 
             # if best_dice < dice:
             if best_miou < miou:

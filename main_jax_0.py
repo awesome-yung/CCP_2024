@@ -18,9 +18,9 @@ from BEIT import BEiT3
 from dataset import get_dataloader
 from model import get_model_with_jax
 from train import train_0, train_1
-import wandb
+# import wandb
 
-wandb.init(entity='2024CCP', project='yumin', name='float32_jax')
+# wandb.init(entity='2024CCP', project='yumin', name='float32_jax')
 
 RANDOM_SEED = 42
 

@@ -46,15 +46,26 @@ def validation(epoch, model, data_loader, criterion, thr=0.5):
             # images, masks = images.cuda(), masks.to('cuda',dtype=torch.int64)
             # masks = F.one_hot(masks,num_classes=n_class).permute(0,3,1,2).to(torch.float32)[:,1:,:,:]
             images, masks = images.cuda(), masks.to('cuda',dtype=torch.int64)
-            multi_mask = torch.zeros((masks.shape[0], n_class,masks.shape[1],masks.shape[2] )).to('cuda',torch.float32)
+            print(f'masks shape: {masks.shape}')
+            multi_mask = torch.zeros((masks.shape[0], n_class, masks.shape[1],masks.shape[2], masks.shape[3])).to('cuda',torch.float32)
 
             for c in range(1, n_class):
+                print(f'multi_mask: {multi_mask.shape}')
                 multi_mask[:, c - 1, :,:] = (masks == c)
+
 
 
             masks = multi_mask
 
             outputs = model(images)
+
+            outputs = outputs.repeat(1, n_class, 1, 1, 1) # 추가한거.. 아닌거같음
+
+            # TODO: outputs를 2차원에 대해 n_class만큼 duplicate해서 criterion()에 넣어야되는거 아냐?
+
+            print("***valid loss part***")
+            print(f'outputs shape: {outputs.shape}')
+            print(f'masks shape: {masks.shape}')
 
             loss = criterion(outputs, masks)
             total_loss += loss

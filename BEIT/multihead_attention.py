@@ -75,6 +75,7 @@ class MultiheadAttention_with_flash(nn.Module):
         embed_dim,
         num_heads,
         dropout=0.0,
+        reduction_ratio=0
     ):
         super().__init__()
         self.embed_dim = embed_dim
